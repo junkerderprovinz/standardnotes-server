@@ -169,12 +169,12 @@
           Type="Variable" Display="always" Required="false" Mask="false"/>
 
   <Config Name="Files Server Port" Target="3104" Default="3125" Mode="tcp"
-          Description="Host port for the files server (container 3104). To enable attachments, create a SECOND reverse-proxy host: e.g. in Nginx Proxy Manager add a Proxy Host with Domain Names = files.standardnotes.mydomain.tld, Scheme = http, Forward Hostname/IP = this StandardNotesServer container's IP, Forward Port = 3125, Websockets ON, then on the SSL tab request a Let's Encrypt cert and enable Force SSL + HTTP/2. Then set Public Files Server URL above to https://files.standardnotes.mydomain.tld. Keep host port 3125 unless you also change the proxy host's Forward Port."
+          Description="Host port for the files server (container 3104). To enable attachments, create a SECOND reverse-proxy host: e.g. in Nginx Proxy Manager add a Proxy Host with Domain Names = files.standardnotesserver.mydomain.tld, Scheme = http, Forward Hostname/IP = this StandardNotesServer container's IP, Forward Port = 3125, Websockets ON, then on the SSL tab request a Let's Encrypt cert and enable Force SSL + HTTP/2. Then set Public Files Server URL above to https://files.standardnotesserver.mydomain.tld. Keep host port 3125 unless you also change the proxy host's Forward Port."
           Type="Port" Display="always" Required="true" Mask="false">3125</Config>
 
   <Config Name="Cookie Domain"
           Target="COOKIE_DOMAIN" Default="" Mode=""
-          Description="Public sync domain used by Standard Notes clients, e.g. standardnotes.mydomain.tld. Clients enter https://standardnotes.mydomain.tld as their Custom Sync Server — no separate 'container domain' env var is required for this template. Strongly recommended behind a reverse proxy; HTTPS is required for Secure cookies outside localhost. Wrong/empty value can trigger 'No cookies provided for cookie-based session token' and a /v1/items session loop linked to runaway note duplication. See docs/sync-loop-troubleshooting.md."
+          Description="Public sync domain used by Standard Notes clients, e.g. standardnotesserver.mydomain.tld. Clients enter https://standardnotesserver.mydomain.tld as their Custom Sync Server — no separate 'container domain' env var is required for this template. Strongly recommended behind a reverse proxy; HTTPS is required for Secure cookies outside localhost. Wrong/empty value can trigger 'No cookies provided for cookie-based session token' and a /v1/items session loop linked to runaway note duplication. See docs/sync-loop-troubleshooting.md."
           Type="Variable" Display="always" Required="false" Mask="false"/>
 
 </Container>

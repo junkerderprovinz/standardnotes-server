@@ -310,7 +310,7 @@ password into a public template).
 
 | Field | Example value |
 |---|---|
-| Public sync URL | `https://standardnotes.mydomain.tld` |
+| Public sync URL | `https://standardnotesserver.mydomain.tld` |
 | Server container static IP | `192.168.x.x` |
 | MariaDB Host | `192.168.x.x` |
 | MariaDB Port | `3306` |
@@ -320,8 +320,8 @@ password into a public template).
 | Database Driver (`DB_TYPE`) | `mysql` *(internal driver value required for MariaDB — see § 6)* |
 | Redis Host | `192.168.x.x` |
 | Redis Port | `6379` |
-| Cookie Domain | `standardnotes.mydomain.tld` |
-| Public Files Server URL | *(optional)* `https://files.standardnotes.mydomain.tld` — leave empty to skip attachments — see [§ 8](#8-reverse-proxy) |
+| Cookie Domain | `standardnotesserver.mydomain.tld` |
+| Public Files Server URL | *(optional)* `https://files.standardnotesserver.mydomain.tld` — leave empty to skip attachments — see [§ 8](#8-reverse-proxy) |
 
 > 💡 This template asks for **IP addresses** for the MariaDB and Redis
 > hosts. IPs are unambiguous across Unraid's bridge / `br0` / VLAN
@@ -429,7 +429,7 @@ Set the Redis Host field to the **IP address** of your Redis container
 | `AUTH_SERVER_ENCRYPTION_SERVER_KEY` | *(required)* | 32-byte hex — see [§ 4](#4-generating-secrets) |
 | `VALET_TOKEN_SECRET` | *(required)* | 32-byte hex — see [§ 4](#4-generating-secrets) |
 | `PUBLIC_FILES_SERVER_URL` | *(empty)* | Public HTTPS URL of the files server, if reverse-proxied separately |
-| `COOKIE_DOMAIN` | *(empty)* | Public sync domain, e.g. `standardnotes.mydomain.tld`. Clients enter `https://standardnotes.mydomain.tld` as the Custom Sync Server — no extra "container domain" env var is needed for this template. Strongly recommended behind a reverse proxy; HTTPS is required for `Secure` cookies outside `localhost`. Wrong value → `No cookies provided for cookie-based session token` and possible sync loop. See [§ 0](#0-sync-loop--duplicate-notes-guardrails). |
+| `COOKIE_DOMAIN` | *(empty)* | Public sync domain, e.g. `standardnotesserver.mydomain.tld`. Clients enter `https://standardnotesserver.mydomain.tld` as the Custom Sync Server — no extra "container domain" env var is needed for this template. Strongly recommended behind a reverse proxy; HTTPS is required for `Secure` cookies outside `localhost`. Wrong value → `No cookies provided for cookie-based session token` and possible sync loop. See [§ 0](#0-sync-loop--duplicate-notes-guardrails). |
 | `STANDARDNOTES_IMAGE_TAG` | `latest` | Repository tag used by the Unraid template. Default `standardnotes/server:latest`. Pin a known-good tag if `latest` introduces session/sync regressions — change with care, see [`docs/sync-loop-troubleshooting.md`](docs/sync-loop-troubleshooting.md). |
 
 ### Ports & Volumes
@@ -478,11 +478,11 @@ own LAN IPs and domain):
 |---|---|
 | NPM host | `192.168.x.x` |
 | Standard Notes server static IP | `192.168.x.x` |
-| Public domain | `standardnotes.mydomain.tld` |
+| Public domain | `standardnotesserver.mydomain.tld` |
 
 In the NPM UI, **Hosts → Proxy Hosts → Add Proxy Host**:
 
-- **Domain Names:** `standardnotes.mydomain.tld`
+- **Domain Names:** `standardnotesserver.mydomain.tld`
 - **Scheme:** `http`
 - **Forward Hostname / IP:** `192.168.x.x` *(StandardNotesServer container IP)*
 - **Forward Port:** `3000`
@@ -494,8 +494,8 @@ In the NPM UI, **Hosts → Proxy Hosts → Add Proxy Host**:
 
 Then in the Standard Notes template, set:
 
-- `COOKIE_DOMAIN=standardnotes.mydomain.tld`
-- (optional) `PUBLIC_FILES_SERVER_URL=https://files.standardnotes.mydomain.tld`
+- `COOKIE_DOMAIN=standardnotesserver.mydomain.tld`
+- (optional) `PUBLIC_FILES_SERVER_URL=https://files.standardnotesserver.mydomain.tld`
   if and only if you also create a separate proxy host for the files
   server (see below).
 
@@ -518,10 +518,10 @@ shape. Two options:
    minimal community-template install.
 2. **Two NPM proxy hosts / two subdomains (recommended for full
    attachment support).** Add a second NPM proxy host, e.g.
-   `files.standardnotes.mydomain.tld` → `192.168.x.x:3125` (the
+   `files.standardnotesserver.mydomain.tld` → `192.168.x.x:3125` (the
    StandardNotesServer container IP), with its own Let's Encrypt
    certificate and **Force SSL** on. Then set
-   **Public Files Server URL** = `https://files.standardnotes.mydomain.tld`
+   **Public Files Server URL** = `https://files.standardnotesserver.mydomain.tld`
    in the template.
 
 > ⚠️ **Same-domain / path-prefix proxying is not recommended for this
@@ -540,7 +540,7 @@ If you are not using NPM, a minimal SWAG (`nginx`) location block:
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name standardnotes.mydomain.tld;
+    server_name standardnotesserver.mydomain.tld;
 
     include /config/nginx/ssl.conf;
 
@@ -559,8 +559,8 @@ server {
 ```
 
 If you reverse-proxy the **files server** under a separate hostname
-(e.g. `files.standardnotes.mydomain.tld`), set
-`PUBLIC_FILES_SERVER_URL=https://files.standardnotes.mydomain.tld` in
+(e.g. `files.standardnotesserver.mydomain.tld`), set
+`PUBLIC_FILES_SERVER_URL=https://files.standardnotesserver.mydomain.tld` in
 the template's *Public Files Server URL* field.
 
 ---

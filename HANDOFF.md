@@ -220,8 +220,8 @@ Per direct user request. Scope kept small.
 
 - **No real domain anywhere in templates/docs/examples.** Replaced
   `standardnotes.bottich.lol` / `files.standardnotes.bottich.lol`
-  with generic `standardnotes.mydomain.tld` /
-  `files.standardnotes.mydomain.tld` across `README.md`,
+  with generic `standardnotesserver.mydomain.tld` /
+  `files.standardnotesserver.mydomain.tld` across `README.md`,
   `templates/standardnotes-server.xml`, `examples/.env.example`, and
   the `docs/` files. The "test deployment" sample table in the
   README is now a generic shape reference (no real LAN IPs, no real
@@ -243,12 +243,12 @@ Per direct user request. Scope kept small.
   `Files Server Port` `<Config>` is now placed directly under
   `Public Files Server URL` in the XML (moved out of the PORTS
   block at the top). Its description spells out the second-NPM-host
-  recipe: Domain `files.standardnotes.mydomain.tld`, Scheme http,
+  recipe: Domain `files.standardnotesserver.mydomain.tld`, Scheme http,
   Forward IP = StandardNotes container IP, Forward Port `3125`,
   Websockets ON, Let's Encrypt + Force SSL + HTTP/2 ON.
 - **`COOKIE_DOMAIN` doubles as the public sync domain note.** Its
   description now states explicitly that clients enter
-  `https://standardnotes.mydomain.tld` as their Custom Sync Server
+  `https://standardnotesserver.mydomain.tld` as their Custom Sync Server
   and that **no separate "container domain" env var is required**
   for this template (the upstream `standardnotes/server` image does
   not document one — only `COOKIE_DOMAIN` and
@@ -801,6 +801,22 @@ canvas, suitable as the Docker/Unraid container icon. Each template's
 (`standardnotes-server` or `standardnotes-webui`) but they reference the
 same relative asset path `.github/assets/icon.svg`, so future asset
 changes only need to be replicated across both repos.
+
+## Latest pass — banner centering & domain example consistency
+
+- `.github/assets/banner.svg` rebuilt with the "Standard Notes" wordmark
+  expressed as embedded vector paths (Liberation Sans Bold @ 92 px,
+  letter-spacing -2). Layout is mathematically centered on the 1200×360
+  canvas: mark (180) + gap (32) + wordmark (~654) = ~866, with ~167 px
+  side padding on each side. Removes the previous renderer-dependent
+  text width. Banner is byte-identical across `standardnotes-server`
+  and `standardnotes-webui`. Icon unchanged.
+- All user-facing references to the sync/API host now use
+  `standardnotesserver.mydomain.tld` (and
+  `files.standardnotesserver.mydomain.tld` for the files server)
+  across `README.md`, `examples/.env.example`, and
+  `templates/standardnotes-server.xml`. `COOKIE_DOMAIN` and
+  `PUBLIC_FILES_SERVER_URL` examples updated accordingly.
 
 ## Not done (out of scope per instructions)
 
