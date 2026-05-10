@@ -9,7 +9,7 @@ This document is the long-form companion to
 Read that section first.
 
 > ⚠️ If duplication is **happening right now**: stop every connected
-> client, stop the `StandardNotes-Server` container, and **do not keep
+> client, stop the `StandardNotes` container, and **do not keep
 > editing notes**. Every additional edit can fan out further. Diagnose
 > first, then resume.
 
@@ -56,21 +56,21 @@ Standard Notes uses Redis for cache, queues, and rate-limiting. If
 Redis is unreachable, sync de-duplication and session state get
 inconsistent — a known precursor to duplicate cascades.
 
-- [ ] In the Unraid template, `REDIS_HOST` is set to the **container
-      name** of your Redis container (e.g. `redis`), not a LAN IP.
+- [ ] In the Unraid template, **Redis Host** is set to the **IP
+      address** of your Redis container (e.g. `192.168.20.72`).
+      Use a static / DHCP-reserved address so the IP doesn't change
+      on container restart.
 - [ ] `REDIS_PORT=6379` (or whatever your Redis container actually
       listens on).
-- [ ] Both containers share the **same custom Docker bridge network**
-      (or both are on the default `bridge`). Containers on different
-      Unraid `br0` macvlan networks cannot resolve each other by name.
-- [ ] From the Standard Notes container's shell:
+- [ ] The StandardNotes container can reach the Redis IP/port. From
+      the StandardNotes container's shell:
 
     ```bash
-    docker exec -it StandardNotes-Server sh
-    # inside the container:
-    nc -zv redis 6379           # should print "open"
+    docker exec -it StandardNotes sh
+    # inside the container (replace with your Redis IP):
+    nc -zv 192.168.20.72 6379    # should print "open"
     # or, if nc is unavailable:
-    timeout 2 sh -c 'cat </dev/tcp/redis/6379' && echo OK
+    timeout 2 sh -c 'cat </dev/tcp/192.168.20.72/6379' && echo OK
     ```
 
 - [ ] **Expected failure mode if wrong:** the server log emits
@@ -85,11 +85,9 @@ inconsistent — a known precursor to duplicate cascades.
 
 A half-migrated database is a known cause of strange sync behaviour.
 
-- [ ] `DB_HOST` points at your MariaDB container. When MariaDB runs on
-      the **same Unraid host** on a custom Docker bridge network,
-      use the **container name** (e.g. `mariadb`) — bridge IPs change
-      on restart. When MariaDB runs on a **different host / VLAN**
-      (e.g. `192.168.20.71`), a static LAN IP is fine.
+- [ ] `DB_HOST` points at the **IP address** of your MariaDB
+      container (e.g. `192.168.20.71`). Use a static / DHCP-reserved
+      address.
 - [ ] `DB_PORT=3306`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE` all
       match what you created in MariaDB.
 - [ ] Database `standard_notes_db` exists with `ALL PRIVILEGES`
@@ -166,7 +164,7 @@ When something is wrong, these are the strings that matter. Tail the
 container log:
 
 ```bash
-docker logs -f StandardNotes-Server
+docker logs -f StandardNotes
 ```
 
 …and watch for any of the following:

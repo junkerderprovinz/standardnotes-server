@@ -5,13 +5,13 @@
 </a>
 
 <p align="center">
-  <a href="https://hub.docker.com/r/standardnotes/server"><img src="https://img.shields.io/badge/Image-standardnotes%2Fserver-3daee9?style=for-the-badge&logo=docker&logoColor=white" alt="Image" height="36"></a>&nbsp;
-  <a href="https://standardnotes.com/help/self-hosting/docker"><img src="https://img.shields.io/badge/Docs-Self--Hosting-3daee9?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Docs" height="36"></a>&nbsp;
-  <a href="#3-quick-start-on-unraid"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
-  <a href="#5-database--cache"><img src="https://img.shields.io/badge/Database-MariaDB-bdc3c7?style=for-the-badge&logo=mariadb&logoColor=white" alt="MariaDB" height="36"></a>&nbsp;
-  <a href="#5-database--cache"><img src="https://img.shields.io/badge/Cache-Redis-bdc3c7?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" height="36"></a>&nbsp;
-  <a href="#7-security"><img src="https://img.shields.io/badge/E2E-encrypted-3daee9?style=for-the-badge&logo=letsencrypt&logoColor=white" alt="E2E" height="36"></a>&nbsp;
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" height="36"></a>
+  <a href="#3-quick-start-on-unraid"><img src="https://img.shields.io/badge/Unraid-Community%20Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid Community Template"></a>
+  <a href="https://standardnotes.com"><img src="https://img.shields.io/badge/Standard%20Notes-self--hosted-086DD7?style=for-the-badge&logo=standardnotes&logoColor=white" alt="Standard Notes"></a>
+  <a href="https://hub.docker.com/r/standardnotes/server"><img src="https://img.shields.io/badge/Docker-standardnotes%2Fserver-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker image"></a>
+  <a href="#5-database--cache"><img src="https://img.shields.io/badge/Database-MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white" alt="MariaDB"></a>
+  <a href="#5-database--cache"><img src="https://img.shields.io/badge/Cache-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis"></a>
+  <a href="https://github.com/junkerderprovinz/standardnotes/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/junkerderprovinz/standardnotes/validate.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=validate" alt="Validate"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/junkerderprovinz/standardnotes?style=for-the-badge&color=yellow" alt="License: MIT"></a>
 </p>
 
 <p align="center">
@@ -78,9 +78,11 @@ every additional client write makes the situation worse.
 - **Reverse proxy serving the API over HTTP instead of HTTPS.** Modern
   clients require HTTPS; without it, `Secure` cookies are dropped and
   the session loop above can trigger.
-- **IP addresses instead of Docker container names** for `DB_HOST` /
-  `REDIS_HOST`. IPs change when containers restart on Unraid; container
-  names on a shared custom bridge network are stable.
+- **Wrong host or unreachable network** for `DB_HOST` / `REDIS_HOST`.
+  This template asks for IP addresses (e.g. `192.168.20.71`) — they
+  are unambiguous across Unraid's bridge / `br0` / VLAN setups. Make
+  sure the IP is static (DHCP reservation or fixed) so it does not
+  change on container restart.
 - **Image / client version mismatch.** The legacy
   [`standardnotes/syncing-server` issue
   #102](https://github.com/standardnotes/syncing-server/issues/102)
@@ -152,7 +154,7 @@ What it deliberately does **not** do:
 
 What it does do:
 
-- **One Unraid template per concern** — `StandardNotes-Server` and
+- **One Unraid template per concern** — `StandardNotes` and
   (optionally) `StandardNotes-LocalStack`.
 - **Sane defaults** taken from the upstream
   [`.env.sample`](https://github.com/standardnotes/server/blob/main/.env.sample).
@@ -180,7 +182,7 @@ What it does do:
 ┌──────────────────────────── Unraid Host ────────────────────────────┐
 │                                                                     │
 │   Reverse Proxy                                                     │
-│   (SWAG / NPM / Traefik)  ──HTTPS──►  StandardNotes-Server          │
+│   (SWAG / NPM / Traefik)  ──HTTPS──►  StandardNotes                 │
 │                                       (standardnotes/server)        │
 │                                       :3000  API gateway            │
 │                                       :3104  files server           │
@@ -248,7 +250,7 @@ In the Unraid Web UI: **Docker** → **Add Container** → in the
 
 ### Step 3 — Start the Standard Notes server
 
-**Docker** → **Add Container** → pick **StandardNotes-Server** under
+**Docker** → **Add Container** → pick **StandardNotes** under
 *User templates*. Fill in:
 
 - **DB Host / Port / Username / Password / Name** → values of your MariaDB
@@ -272,24 +274,22 @@ template).
 |---|---|
 | Public sync URL | `https://standardnotes.bottich.lol` |
 | Server container static IP | `192.168.20.38` |
-| `DB Host (DB_HOST)` | `192.168.20.71` *(MariaDB on a separate VLAN)* |
-| `DB Port (DB_PORT)` | `3306` |
-| `DB Username (DB_USERNAME)` | `junkerderprovinz` |
-| `DB Password (DB_PASSWORD)` | *(your own — generate / store in password manager)* |
-| `DB Name (DB_DATABASE)` | `standardnotes` *(already created)* |
-| `DB Type (DB_TYPE)` | `mysql` *(internal driver value required for MariaDB — see § 6)* |
-| `Redis Host (REDIS_HOST)` | `192.168.20.72` *(no auth in this test setup)* |
-| `Redis Port (REDIS_PORT)` | `6379` |
-| `COOKIE_DOMAIN` | `standardnotes.bottich.lol` |
-| `PUBLIC_FILES_SERVER_URL` | leave empty unless you proxy files separately — see [§ 8](#8-reverse-proxy) |
+| MariaDB Host | `192.168.20.71` |
+| MariaDB Port | `3306` |
+| MariaDB User | `junkerderprovinz` |
+| MariaDB Password | *(your own — store in password manager)* |
+| MariaDB Database Name | `standardnotes` *(already created)* |
+| Database Driver (`DB_TYPE`) | `mysql` *(internal driver value required for MariaDB — see § 6)* |
+| Redis Host | `192.168.20.72` *(no auth in this test setup)* |
+| Redis Port | `6379` |
+| Cookie Domain | `standardnotes.bottich.lol` |
+| Public Files Server URL | *(optional)* `https://files.standardnotes.bottich.lol` — leave empty to skip attachments — see [§ 8](#8-reverse-proxy) |
 
-> 💡 The example above uses **LAN IPs** because the MariaDB and Redis
-> containers live on a different host / VLAN than the Standard Notes
-> server. When MariaDB and Redis run on the **same** Unraid host as the
-> Standard Notes container on a shared bridge network, prefer the
-> Unraid container names (e.g. `mariadb`, `redis`) over LAN IPs — see
-> [§ 0](#0-sync-loop--duplicate-notes-guardrails) and
-> [`docs/sync-loop-troubleshooting.md`](docs/sync-loop-troubleshooting.md).
+> 💡 This template asks for **IP addresses** for the MariaDB and Redis
+> hosts. IPs are unambiguous across Unraid's bridge / `br0` / VLAN
+> setups and do not silently break when Docker bridge names get
+> reassigned. Use a static / DHCP-reserved address so the IP doesn't
+> change on container restart.
 
 ### Step 4 — Reverse-proxy & connect a client
 
@@ -358,12 +358,17 @@ Any 6.x or 7.x Redis container works. Recommended:
 
 - **Redis-Official** (Community Applications), default port 6379, no auth.
 
-Set `REDIS_HOST` to the Unraid container name (typically `redis`) and
-`REDIS_PORT` to `6379`.
+Set the Redis Host field to the **IP address** of your Redis container
+(e.g. `192.168.20.72`) and `REDIS_PORT` to `6379`.
 
-> 💡 Containers on Unraid's default `bridge` network resolve each other
-> by container name. So `DB_HOST=mariadb` and `REDIS_HOST=redis` *just
-> work* if those are your container names.
+> 🔒 **Redis security.** This community template intentionally does
+> **not** expose a Redis password field. The official
+> `standardnotes/server` image does not document a Redis-auth env var,
+> and adding one without verifying upstream support tends to break
+> installs. Instead, keep Redis on a **trusted VLAN or private bridge**
+> and firewall it off from the public internet. If your particular
+> image fork supports Redis auth, verify the env-var name against its
+> docs first, then add it as a custom Variable in the template.
 
 ---
 
@@ -373,13 +378,13 @@ Set `REDIS_HOST` to the Unraid container name (typically `redis`) and
 
 | Variable | Default | Description |
 |---|---|---|
-| `DB_HOST` | *(required)* | Hostname or IP of your MariaDB container |
+| `DB_HOST` | *(required)* | IP address of your MariaDB container, e.g. `192.168.20.71` |
 | `DB_PORT` | `3306` | DB port |
 | `DB_USERNAME` | `std_notes_user` | DB user |
 | `DB_PASSWORD` | *(required)* | DB password |
 | `DB_DATABASE` | `standard_notes_db` | DB name |
 | `DB_TYPE` | `mysql` | **Internal driver value required for MariaDB.** Standard Notes / TypeORM uses the `mysql` driver string to talk to MariaDB — leave at `mysql`. |
-| `REDIS_HOST` | *(required)* | Hostname of Redis container |
+| `REDIS_HOST` | *(required)* | IP address of your Redis container, e.g. `192.168.20.72` |
 | `REDIS_PORT` | `6379` | Redis port |
 | `CACHE_TYPE` | `redis` | Leave at `redis` |
 | `AUTH_JWT_SECRET` | *(required)* | 32-byte hex — see [§ 4](#4-generating-secrets) |
@@ -456,29 +461,38 @@ Then in the Standard Notes template, set:
   if and only if you also create a separate proxy host for the files
   server (see below).
 
-### Files server — separate subdomain recommended
+### Files server — is a second subdomain required?
+
+**Short answer:** No, a second subdomain is not strictly required, but
+for any **fully configured public** setup with attachments it is the
+recommended path.
 
 The Standard Notes **files server** listens on its own port (`3125` on
 the host → `3104` in the container) and is the upload/download
-endpoint for attachments. Two options:
+endpoint for attachments. The official Docker docs expose the sync
+server on `:3000` and the files server on `:3125` and configure
+`PUBLIC_FILES_SERVER_URL` to a separate URL — that is the upstream
+shape. Two options:
 
-1. **Skip attachments (simplest).** Leave `PUBLIC_FILES_SERVER_URL`
-   empty. Note creation, editing, and sync work fully — only
-   attachment upload/download is disabled. This is the intended path
-   for a "fully configured but minimal" template.
-2. **Separate hostname (recommended if you want attachments).** Create
-   a second NPM proxy host, e.g. `files.standardnotes.bottich.lol`
-   → `192.168.20.38:3125`, with its own Let's Encrypt certificate.
-   Then set `PUBLIC_FILES_SERVER_URL=https://files.standardnotes.bottich.lol`
+1. **Skip attachments (simplest).** Leave **Public Files Server URL**
+   empty. Note creation, editing, and sync all work — only attachment
+   upload/download is disabled. This is the intended path for a
+   minimal community-template install.
+2. **Two NPM proxy hosts / two subdomains (recommended for full
+   attachment support).** Add a second NPM proxy host, e.g.
+   `files.standardnotes.bottich.lol` → `192.168.20.38:3125`, with its
+   own Let's Encrypt certificate. Then set
+   **Public Files Server URL** = `https://files.standardnotes.bottich.lol`
    in the template.
 
-> ⚠️ **Single-domain path proxying is not reliably supported.** The
-> Standard Notes files server does not document a path-prefix mode
-> (e.g. routing `/files/*` from one host to port 3104 while `/`
-> hits port 3000). Some users get it working with custom NPM
-> *Advanced* nginx config, but it can break across upstream image
-> updates. If you want stable attachment support, give the files
-> server its own host or subdomain.
+> ⚠️ **Same-domain / path-prefix proxying is not recommended for this
+> community template.** The upstream image documents the two-port,
+> two-URL split (sync on `:3000`, files on `:3125` with
+> `PUBLIC_FILES_SERVER_URL`). Some operators get a single-domain
+> `/files/*` setup working with custom NPM *Advanced* nginx config,
+> but it can break across upstream image updates and is not part of
+> the supported template default. For stable attachment support,
+> give the files server its own subdomain.
 
 ### Generic reverse-proxy snippet (SWAG / nginx)
 
@@ -494,7 +508,7 @@ server {
     location / {
         include /config/nginx/proxy.conf;
         resolver 127.0.0.11 valid=30s;
-        set $upstream_app standardnotes-server;
+        set $upstream_app 192.168.20.38;
         set $upstream_port 3000;
         set $upstream_proto http;
         proxy_pass $upstream_proto://$upstream_app:$upstream_port;
@@ -535,7 +549,7 @@ folder, start the container.
 
 ```bash
 docker pull standardnotes/server:latest
-docker stop StandardNotes-Server && docker rm StandardNotes-Server
+docker stop StandardNotes && docker rm StandardNotes
 # re-create with the same template / docker run args
 ```
 
@@ -599,9 +613,9 @@ start — watch the log for errors.
 - Check the server log for `No cookies provided for cookie-based
   session token`, `ECONNREFUSED`, repeated `/v1/items` 401/500 calls,
   or `duplicate_of` cascades.
-- Verify `REDIS_HOST` / `REDIS_PORT` and that the Redis container is
-  reachable by **container name** on the same custom bridge network
-  (not by LAN IP).
+- Verify `REDIS_HOST` / `REDIS_PORT` point at the right **IP** and
+  that the Redis container is actually reachable from the
+  StandardNotes container (`nc -zv <ip> 6379`).
 - Verify `COOKIE_DOMAIN` matches your public sync host and that the
   reverse proxy serves the API over **HTTPS**.
 - Roll back to a known-good `standardnotes/server` tag if you recently

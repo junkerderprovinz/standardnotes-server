@@ -7,7 +7,7 @@ upstream [`.env.sample`](https://github.com/standardnotes/server/blob/main/.env.
 
 | Variable | Default | Notes |
 |---|---|---|
-| `DB_HOST` | *required* | Container name or IP of your MariaDB container. |
+| `DB_HOST` | *required* | IP address of your MariaDB container, e.g. `192.168.20.71`. |
 | `DB_PORT` | `3306` | |
 | `DB_USERNAME` | `std_notes_user` | |
 | `DB_PASSWORD` | *required* | |
@@ -32,11 +32,17 @@ Standard Notes container.
 
 | Variable | Default | Notes |
 |---|---|---|
-| `REDIS_HOST` | *required* | Container name or IP. |
+| `REDIS_HOST` | *required* | IP address of your Redis container, e.g. `192.168.20.72`. |
 | `REDIS_PORT` | `6379` | |
 | `CACHE_TYPE` | `redis` | Leave at this value. |
 
 A vanilla `redis:7-alpine` container with no auth is sufficient.
+
+> 🔒 **Redis security.** This template does not expose a Redis
+> password field. The official `standardnotes/server` image does not
+> document a Redis-auth env var. Keep Redis isolated on a trusted
+> VLAN / private bridge and firewall it off the public internet. Only
+> add an auth env var if your specific image fork documents it.
 
 ## Secrets
 

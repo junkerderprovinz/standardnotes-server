@@ -5,6 +5,128 @@ been pushed, no remote has been created, and no Community Applications
 submission has been made. Do not push, create a repo, or publish until
 the user explicitly approves.
 
+## Latest pass — UI polish, IP-only host wording, README badges
+
+This pass tightens the Unraid UI presentation, clarifies the
+host-address model, answers the "second subdomain required?" question
+explicitly, and adds a polished badge row to the README.
+
+- **Container name is now exactly `StandardNotes`** in
+  `templates/standardnotes-server.xml` (`<Name>StandardNotes</Name>`,
+  per the user's request). README §10 update commands and
+  `docs/sync-loop-troubleshooting.md` `docker exec` / `docker logs`
+  examples updated to match. The XML *filename* stays
+  `standardnotes-server.xml`.
+- **Variable display names → nice labels.** The `<Config Name="…">`
+  for every variable is now a human label (`MariaDB Host`,
+  `MariaDB Port`, `MariaDB User`, `MariaDB Password`,
+  `MariaDB Database Name`, `Database Driver`, `Redis Host`,
+  `Redis Port`, `Cache Backend`, `JWT Secret`,
+  `Auth Server Encryption Key`, `Valet Token Secret`,
+  `Public Files Server URL`, `Cookie Domain`). The underlying
+  `Target=` env-key values (`DB_HOST`, `DB_USERNAME`, …) are
+  unchanged so the running container env is identical.
+- **IP-based host wording, container-name preference removed.** The
+  template's `DB_HOST` / `REDIS_HOST` descriptions now say:
+  "IP address of your … container, e.g. 192.168.20.71 / .72 — IP is
+  preferred — unambiguous and stable." The README §0 cause list,
+  §3 example table, §5 Redis section, §6 configuration table, §11
+  troubleshooting entry, `docs/configuration.md`, and
+  `docs/sync-loop-troubleshooting.md` are all updated to match. The
+  README §3 lead-in and the example NPM nginx snippet now point at
+  `192.168.20.38` rather than a `standardnotes-server` container
+  name.
+- **Compact variable descriptions** with explicit secret-generation
+  hints. `JWT Secret`, `Auth Server Encryption Key`,
+  `Valet Token Secret` each carry `Generate with: openssl rand -hex 32`
+  in the description. `MariaDB Password` description reminds the user
+  that they should use the password they set when creating the DB
+  user (no need to generate a fresh secret unless they're also
+  creating the user). `Cookie Domain` and `Public Files Server URL`
+  descriptions reduced to single tight paragraphs.
+- **Redis password not added.** The official `standardnotes/server`
+  image does not document a Redis-auth env var. Adding one without
+  upstream confirmation would risk broken installs. Instead the
+  Redis Host description and the README §5 / `docs/configuration.md`
+  carry a compact security note: keep Redis on a trusted VLAN /
+  private bridge and firewall it off the public internet; only add
+  auth if your specific image fork documents it.
+- **README §8 — second subdomain question answered explicitly.**
+  Section retitled "Files server — is a second subdomain required?"
+  with a "Short answer: No, but recommended for fully configured
+  attachment support" lead. Re-states upstream's two-port,
+  two-URL split (sync `:3000`, files `:3125` +
+  `PUBLIC_FILES_SERVER_URL`). Same-domain path proxying called out
+  as **not recommended for this community template** rather than
+  "not reliably supported" — clearer wording, same outcome.
+- **README badge row** rebuilt as a polished shields.io row near the
+  top: Unraid Community Template, Standard Notes self-hosted,
+  Docker `standardnotes/server`, MariaDB, Redis, GitHub Actions
+  validate workflow, License (MIT). All badges link to relevant
+  sections / repos and use brand colours where applicable.
+- **`examples/.env.example`** — `DB_HOST` and `REDIS_HOST` switched
+  to IP-style examples (`192.168.20.71`, `192.168.20.72`); Redis
+  block notes the absence of a password env and the VLAN /
+  firewall recommendation.
+
+### Files changed in this pass
+
+```
+standardnotes/
+├── README.md                              # badge row, container
+│                                          # name updates, IP-only
+│                                          # host wording, §3
+│                                          # example table, §5 Redis
+│                                          # security note, §8
+│                                          # second-subdomain answer
+├── HANDOFF.md                             # this update
+├── docs/
+│   ├── configuration.md                   # IP wording, Redis
+│   │                                      # security note
+│   └── sync-loop-troubleshooting.md       # IP wording, container
+│                                          # name in docker exec /
+│                                          # docker logs
+├── templates/
+│   └── standardnotes-server.xml           # <Name>StandardNotes</Name>,
+│                                          # nice variable labels,
+│                                          # IP-based host
+│                                          # descriptions, compact
+│                                          # secret-gen hints
+└── examples/
+    └── .env.example                       # IP-based DB / Redis
+                                           # examples, Redis security
+                                           # note
+```
+
+### Validation (this pass)
+
+```
+$ python3 -c "import xml.etree.ElementTree as ET; \
+    [print('ok', f) or ET.parse(f) for f in [ \
+      'templates/standardnotes-server.xml', \
+      'templates/standardnotes-localstack.xml', \
+      '.github/assets/banner.svg', \
+      '.github/assets/icon.svg']]"
+ok templates/standardnotes-server.xml
+ok templates/standardnotes-localstack.xml
+ok .github/assets/banner.svg
+ok .github/assets/icon.svg
+
+$ grep -niE "container.name|by name" README.md templates/*.xml \
+    docs/*.md examples/.env.example
+templates/standardnotes-localstack.xml:26:      Unraid's container-name DNS (…)
+# (only match — and that one is the LocalStack INTERNAL hostname
+#  the upstream image expects on the docker bridge, not a
+#  user-facing host field. Intentionally retained.)
+
+$ grep -nE "REPLACE_WITH_[A-Z_]+" templates README.md docs examples
+(no matches — clean)
+```
+
+---
+
+
+
 > Repo name change: the published GitHub repository is
 > `junkerderprovinz/standardnotes` (no `-unraid` suffix). All
 > in-template `<TemplateURL>`, `<Icon>`, `<Support>`, README install
