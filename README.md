@@ -1041,6 +1041,34 @@ start — watch the log for errors.
 </details>
 
 <details>
+<summary><b>Unraid edit screen shows template defaults / values look "reset"</b></summary>
+
+- Symptom: opening the StandardNotesServer (or LocalStack / WebUI)
+  container, clicking *Edit*, and seeing all variables back at the
+  template defaults — `192.168.x.x`, blank secrets, etc. — even
+  right after a successful install.
+- Edit the **existing container**, not the template: in Unraid, go
+  to *Docker* → click the container's icon → *Edit*. That loads the
+  live, saved values for that container. Opening the template from
+  *Apps* / *Add Container* / *Templates* re-displays the template
+  defaults, which is expected.
+- Do **not** overwrite the saved per-container XML
+  (`/boot/config/plugins/dockerMan/templates-user/my-StandardNotesServer.xml`
+  and the corresponding `my-StandardNotes-LocalStack.xml` /
+  `my-StandardNotes.xml`) with `curl` from this repo after you have
+  configured the container. The `templates/` files in this repo are
+  *new-install* templates; once Unraid has saved a `my-*.xml`, that
+  file holds your real values and must not be clobbered.
+- This template ships `Config` elements with **inner text equal to
+  their `Default=`** attribute (krusader-style) so Unraid's dockerMan
+  reliably persists and re-displays each value. If you had an older
+  copy of the template without inner text and edited the container
+  before this fix, re-installing the container from the updated
+  template (or manually re-entering your values once) is enough —
+  no data is lost on disk.
+</details>
+
+<details>
 <summary><b>Client app says "Unable to reach server"</b></summary>
 
 - Try the API directly: `curl https://your-domain/healthcheck`. If that

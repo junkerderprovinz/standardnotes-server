@@ -5,7 +5,69 @@ been pushed, no remote has been created, and no Community Applications
 submission has been made. Do not push, create a repo, or publish until
 the user explicitly approves.
 
-## Latest pass — static-IP / VLAN install path, redis:7-alpine disambiguation
+## Latest pass — dockerMan inner-text audit + edit-screen "reset" troubleshooting
+
+User reported that on Unraid, opening *Edit* on a freshly installed
+StandardNotesServer container shows the template defaults rather than
+the values that were saved at install time. Comparison with the
+user's working krusader template (`<Config ... Default="3000">3000</Config>`)
+suggested dockerMan persists / re-displays the inner text node of each
+`<Config>` element, not just the `Default=` attribute.
+
+Audit result: every `<Config>` in this repo's templates that has a
+non-empty `Default=` **already** carries matching inner text (krusader
+style). The self-closing `<Config .../>` elements that remain all have
+`Default=""` and are either:
+
+- Sensitive blanks (passwords / secrets) — `DB_PASSWORD`,
+  `AUTH_JWT_SECRET`, `AUTH_SERVER_ENCRYPTION_SERVER_KEY`,
+  `VALET_TOKEN_SECRET`. These intentionally have no default, so an
+  empty/self-closing element is correct.
+- Optional blanks — `PUBLIC_FILES_SERVER_URL`, `COOKIE_DOMAIN`. Same
+  reasoning: empty default, no user-real-domain shipped in the
+  template.
+
+No template XML mutation was needed; the audit is recorded here so
+the next person doesn't redo it. The same holds for
+`templates/standardnotes-localstack.xml` (all non-empty defaults
+already have matching inner text) and the companion webui repo's
+`templates/standardnotes-webui.xml`.
+
+### What changed in this pass
+
+- **`README.md`** § 11 *Troubleshooting* — new collapsible entry
+  *"Unraid edit screen shows template defaults / values look reset"*.
+  Explains the two ways users hit it: (a) opening the template from
+  *Apps* / *Add Container* / *Templates* (which always shows
+  defaults) instead of clicking the container icon → *Edit* (which
+  loads the live, saved values), and (b) overwriting the saved
+  per-container `my-*.xml` (`my-StandardNotesServer.xml`,
+  `my-StandardNotes-LocalStack.xml`, `my-StandardNotes.xml`) with
+  `curl` after configuring. Also notes that the templates already
+  ship inner text matching every non-empty `Default=`, so dockerMan
+  persists and re-displays each value reliably.
+- **`HANDOFF.md`** (this section).
+
+Files changed in this pass:
+
+- `README.md`
+- `HANDOFF.md`
+
+No template XML changed; audit confirmed templates are already
+krusader-style.
+
+Validation summary for this pass:
+
+- `python3 -c 'import xml.etree.ElementTree as ET; ET.parse(p)'` on
+  both `templates/*.xml` and `.github/assets/*.svg` → all OK.
+- `python3 -c 'import yaml; yaml.safe_load(open(p))'` on
+  `.github/workflows/*.yml` → OK.
+- Spot-check: every `Default="<non-empty>"` in
+  `templates/standardnotes-server.xml` and
+  `templates/standardnotes-localstack.xml` has matching inner text.
+  Every remaining self-closing `<Config .../>` has `Default=""`.
+
+## Earlier pass — static-IP / VLAN install path, redis:7-alpine disambiguation
 
 User clarified two things from a live `br0.20` VLAN install where each
 container has its own fixed IP:
