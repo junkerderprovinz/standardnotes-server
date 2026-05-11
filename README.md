@@ -470,6 +470,17 @@ The Standard Notes server image talks to:
 
 ## 3. Quick Start on Unraid
 
+> ✅ **Validated end-to-end on Unraid** with a static-IP / VLAN setup
+> after (1) Redis was made reachable from the server container, (2)
+> LocalStack was bootstrapped with the upstream SNS/SQS init script,
+> and (3) the `localstack` hostname was mapped on the server container
+> via `--add-host=localstack:<LocalStack-IP>`. Applying those three
+> steps resolved the duplicate-note loop observed during testing; the
+> stack has since run cleanly through account creation, single- and
+> multi-client sync, and the troubleshooting probes documented in
+> [§ 0](#0-sync-loop--duplicate-notes-guardrails) and
+> [§ 11](#11-troubleshooting).
+
 ### Step 0 — Pre-flight
 
 You will need:

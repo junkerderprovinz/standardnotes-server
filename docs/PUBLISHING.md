@@ -6,6 +6,44 @@ order, German/English friendly.
 
 ---
 
+## 0. Template Scope — Which Repo Ships Which Template
+
+To avoid double-listing and stay aligned with Unraid CA expectations,
+the two GitHub repos own a fixed, non-overlapping set of templates:
+
+| Repo | CA templates published |
+|---|---|
+| [`junkerderprovinz/standardnotes-server`](https://github.com/junkerderprovinz/standardnotes-server) (this repo) | **`StandardNotesServer`** — official `standardnotes/server` backend.<br>**`StandardNotes-LocalStack`** — Standard-Notes-specific LocalStack companion (SNS/SQS) required by the official server image. |
+| [`junkerderprovinz/standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui) | **`StandardNotes`** — official `standardnotes/web` browser client. |
+
+### Why LocalStack lives in *this* repo, not a separate LocalStack repo
+
+Generic Unraid templates for `localstack/localstack` may exist (or get
+published) elsewhere. This repo deliberately ships its **own**
+LocalStack template — `StandardNotes-LocalStack` — because it is
+Standard-Notes-specific:
+
+- It mounts the upstream
+  [`localstack_bootstrap.sh`](../scripts/localstack_bootstrap.sh)
+  init script into `/etc/localstack/init/ready.d/` to pre-create the
+  exact set of SNS topics and SQS queues the official
+  `standardnotes/server` workers expect (`auth-local-queue`,
+  `syncing-server-local-queue`, `files-local-queue`,
+  `revisions-server-local-queue`, `analytics-local-queue`,
+  `scheduler-local-queue`, plus matching topics).
+- It documents the **required `localstack` hostname mapping** for
+  `br0` / macvlan / VLAN / static-IP Unraid setups
+  (`--add-host=localstack:<LocalStack-IP>` on the server container),
+  which a generic LocalStack template would have no reason to ship.
+- It is versioned and updated together with the server template so
+  the two stay in lockstep — bumping the server image will not break
+  the companion's bootstrap expectations.
+
+Pairing them in one repo (and one CA submission) keeps the install
+path "one Apps page, two clicks" and avoids cross-repo drift.
+
+---
+
 ## 1. Repo State
 
 Prerequisites before anything else can happen:
@@ -28,6 +66,7 @@ grep -rn "REPLACE_WITH_" .   # must return nothing
 python3 -c "import xml.etree.ElementTree as ET; \
   [ET.parse(f) for f in ['templates/standardnotes-server.xml', \
                           'templates/standardnotes-localstack.xml', \
+                          'ca_profile.xml', \
                           '.github/assets/banner.svg', \
                           '.github/assets/icon.svg']]"
 ```
@@ -103,20 +142,30 @@ Commit, push, and wait for the `validate` workflow to go green.
 
 ## 4. Submit to Community Applications
 
-The CA feed lives at
-<https://github.com/Squidly271/AppFeed>. To list this template:
+CA submissions go through the official submission form at
+<https://ca.unraid.net/submit>. Before opening it, confirm:
 
-1. Fork `Squidly271/AppFeed`.
-2. Add an entry pointing to the raw `standardnotes-server.xml` (and
-   optionally `standardnotes-localstack.xml`) under the appropriate
-   category (`Productivity` / `Cloud`).
-3. Open a PR against upstream. Include:
-   - Link to the GitHub repo.
-   - Link to the forum support thread.
-   - Confirmation that the template parses and pulls a real Docker
-     image.
-4. Address review feedback. Squid is responsive but strict about
-   correctness — expect at least one round.
+- The repo is **public** and the `validate` workflow is green on `main`.
+- An **OSI-approved license** (`LICENSE`) is at the repo root — this
+  wrapper is MIT; upstream image licenses retain their own terms.
+- Every template in `templates/` parses and pulls a real image, and
+  every `<TemplateURL>` / `<Icon>` raw URL returns 200 (see § 2).
+- A `ca_profile.xml` exists at the repo root with a **non-empty
+  `<Profile>`** section, valid `<Icon>` / `<WebPage>` / `<Repo>` URLs,
+  and the maintainer name visible on GitHub.
+- An Unraid forum **support thread** exists and is linked from each
+  template's `<Support>` tag (see § 3).
+
+Then open <https://ca.unraid.net/submit> and submit **this repo** — it
+publishes both `StandardNotesServer` and `StandardNotes-LocalStack` as
+companion templates. The browser client lives in the companion repo
+[`standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui)
+and is submitted **separately** (one submission per repo, not one per
+template).
+
+CA review is responsive but strict about correctness — expect at
+least one round of feedback. Address it on `main`, push, and reply
+on the submission thread.
 
 ---
 
