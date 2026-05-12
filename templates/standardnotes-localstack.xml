@@ -24,11 +24,11 @@
         custom bridge and set this container's network alias to&#xD;
         "localstack". Docker's embedded DNS handles the rest.&#xD;
       br0 / macvlan / VLAN / static-IP install: assign this container&#xD;
-        a fixed IP on the same VLAN as StandardNotesServer, then&#xD;
+        a fixed IP on the same VLAN as StandardNotes-Server, then&#xD;
         append --add-host=localstack:&lt;LocalStack-IP&gt; to&#xD;
-        StandardNotesServer's Extra Parameters and restart it.&#xD;
+        StandardNotes-Server's Extra Parameters and restart it.&#xD;
     Verify from the Unraid host:&#xD;
-      docker exec StandardNotesServer getent hosts localstack&#xD;
+      docker exec StandardNotes-Server getent hosts localstack&#xD;
     Must print a non-empty line.&#xD;
     &#xD;
     Required init script. LocalStack starts empty. The server expects a&#xD;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Maintainer>
   <Icon>https://raw.githubusercontent.com/junkerderprovinz/standardnotes-server/main/.github/assets/icon.png</Icon>
-  <Profile>Unraid Community Application templates for the self-hosted Standard Notes backend. This repository ships two companion templates — StandardNotesServer (the official standardnotes/server image, end-to-end-encrypted notes sync) and StandardNotes-LocalStack (a Standard-Notes-specific LocalStack configuration that mounts the upstream SNS/SQS bootstrap script and is required for a stable full install). MariaDB and Redis are user-supplied, reusing the containers most Unraid users already run. Companion browser-client template lives in standardnotes-webui.</Profile>
+  <Profile>Unraid Community Application templates for the self-hosted Standard Notes backend. This repository ships two companion templates — StandardNotes-Server (the official standardnotes/server image, end-to-end-encrypted notes sync) and StandardNotes-LocalStack (a Standard-Notes-specific LocalStack configuration that mounts the upstream SNS/SQS bootstrap script and is required for a stable full install). MariaDB and Redis are user-supplied, reusing the containers most Unraid users already run. Companion browser-client template (StandardNotes-WebUI) lives in standardnotes-webui.</Profile>
   <WebPage>https://github.com/junkerderprovinz/standardnotes-server</WebPage>
   <Repo>https://github.com/junkerderprovinz/standardnotes-server</Repo>
 </Maintainer>

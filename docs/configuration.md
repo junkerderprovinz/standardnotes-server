@@ -67,14 +67,14 @@ resolve the bare name `localstack`. Working setups:
 - **Same user-defined Docker network + alias `localstack`** (preferred).
   Docker's embedded DNS (`127.0.0.11`) resolves the alias.
 - **Static IP / `br0` / macvlan**: Docker DNS is bypassed. Add
-  `--add-host=localstack:<LocalStack-IP>` to `StandardNotesServer`'s
+  `--add-host=localstack:<LocalStack-IP>` to `StandardNotes-Server`'s
   *Extra Parameters*.
 
 Verify resolution from the server container:
 
 ```bash
-docker exec StandardNotesServer getent hosts localstack
-docker exec StandardNotesServer node -e "const net=require('net'); \
+docker exec StandardNotes-Server getent hosts localstack
+docker exec StandardNotes-Server node -e "const net=require('net'); \
   const s=net.connect(4566,'localstack'); s.setTimeout(5000); \
   s.on('connect',()=>{console.log('LocalStack TCP connected'); s.end(); process.exit(0)}); \
   s.on('timeout',()=>{console.error('LocalStack TCP timeout'); process.exit(1)}); \

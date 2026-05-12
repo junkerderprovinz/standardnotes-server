@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>StandardNotesServer</Name>
+  <Name>StandardNotes-Server</Name>
   <Repository>standardnotes/server:latest</Repository>
   <Registry>https://hub.docker.com/r/standardnotes/server</Registry>
   <Network>bridge</Network>
@@ -45,7 +45,7 @@
       Unofficial community template. Always reach the server over HTTPS.&#xD;
       The web client (standardnotes/web) is a separate Unraid template&#xD;
       in the companion repo standardnotes-webui (container name&#xD;
-      "StandardNotes"). See the project README for details.&#xD;
+      "StandardNotes-WebUI"). See the project README for details.&#xD;
     &#xD;
     Hostname "localstack" resolution:&#xD;
       User-defined Docker network: put both containers on the same&#xD;
@@ -54,7 +54,7 @@
         same VLAN with a fixed IP, then append&#xD;
         --add-host=localstack:&lt;LocalStack-IP&gt; to this container's Extra&#xD;
         Parameters and restart. Verify with:&#xD;
-          docker exec StandardNotesServer getent hosts localstack&#xD;
+          docker exec StandardNotes-Server getent hosts localstack&#xD;
     &#xD;
     Notes can duplicate in seconds if Redis, LocalStack, COOKIE_DOMAIN,&#xD;
     the reverse proxy, or the image tag is misconfigured. Always test&#xD;

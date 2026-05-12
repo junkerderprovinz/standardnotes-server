@@ -13,8 +13,8 @@ the two GitHub repos own a fixed, non-overlapping set of templates:
 
 | Repo | CA templates published |
 |---|---|
-| [`junkerderprovinz/standardnotes-server`](https://github.com/junkerderprovinz/standardnotes-server) (this repo) | **`StandardNotesServer`** — official `standardnotes/server` backend.<br>**`StandardNotes-LocalStack`** — Standard-Notes-specific LocalStack companion (SNS/SQS) required by the official server image. |
-| [`junkerderprovinz/standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui) | **`StandardNotes`** — official `standardnotes/web` browser client. |
+| [`junkerderprovinz/standardnotes-server`](https://github.com/junkerderprovinz/standardnotes-server) (this repo) | **`StandardNotes-Server`** — official `standardnotes/server` backend.<br>**`StandardNotes-LocalStack`** — Standard-Notes-specific LocalStack companion (SNS/SQS) required by the official server image. |
+| [`junkerderprovinz/standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui) | **`StandardNotes-WebUI`** — official `standardnotes/web` browser client. |
 
 ### Why LocalStack lives in *this* repo, not a separate LocalStack repo
 
@@ -50,7 +50,7 @@ as **multiple separate installable apps** on the Apps tab, each with
 its own *Install* button, even though all of them share one
 `ca_profile.xml` maintainer entry. For this repo that means:
 
-- `StandardNotesServer` — appears as its own app card.
+- `StandardNotes-Server` — appears as its own app card.
 - `StandardNotes-LocalStack` — appears as its own app card.
 
 Both link back to the same `ca_profile.xml` Profile / WebPage / Repo
@@ -58,7 +58,7 @@ Both link back to the same `ca_profile.xml` Profile / WebPage / Repo
 documented in the README's *Install order (mandatory)* section
 (MariaDB → Redis → LocalStack → Server → WebUI).
 
-The browser client (`StandardNotes`) is **not** part of this CA
+The browser client (`StandardNotes-WebUI`) is **not** part of this CA
 submission — it ships from the separate `standardnotes-webui` repo
 and is published as its own CA submission. CA users will therefore
 see three Standard-Notes-related app cards in total: two from this
@@ -184,7 +184,7 @@ CA submissions go through the official submission form at
   template's `<Support>` tag (see § 3).
 
 Then open <https://ca.unraid.net/submit> and submit **this repo** — it
-publishes both `StandardNotesServer` and `StandardNotes-LocalStack` as
+publishes both `StandardNotes-Server` and `StandardNotes-LocalStack` as
 companion templates. The browser client lives in the companion repo
 [`standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui)
 and is submitted **separately** (one submission per repo, not one per

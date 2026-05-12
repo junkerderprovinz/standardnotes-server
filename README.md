@@ -155,19 +155,19 @@ duplicates.
 1. **Stop every connected client immediately.** Sign out (don't just
    close) on web UI, desktop, mobile. Background sync keeps fanning the
    loop out otherwise.
-2. **Stop the StandardNotesServer container.** Unraid → Docker → stop.
+2. **Stop the StandardNotes-Server container.** Unraid → Docker → stop.
    Leave MariaDB, Redis and LocalStack running so you can inspect
    state.
 3. **Do NOT reconnect any existing client.** Especially not your
    long-history account. Each new edit during a loop can spawn more
    duplicates.
-4. **Verify Redis is reachable from StandardNotesServer.**
+4. **Verify Redis is reachable from StandardNotes-Server.**
    The authoritative test runs from **inside** the
-   `StandardNotesServer` container, using the actual Redis IP — that
+   `StandardNotes-Server` container, using the actual Redis IP — that
    is the network namespace the server itself talks to Redis from:
 
     ```bash
-    docker exec StandardNotesServer node -e "const net=require('net'); \
+    docker exec StandardNotes-Server node -e "const net=require('net'); \
       const s=net.connect(6379,'192.168.x.x'); s.setTimeout(5000); \
       s.on('connect',()=>{console.log('Redis TCP connected'); s.end(); process.exit(0)}); \
       s.on('timeout',()=>{console.error('Redis TCP timeout'); process.exit(1)}); \
@@ -203,8 +203,8 @@ duplicates.
    SQS, so DNS *and* TCP both have to work:
 
     ```bash
-    docker exec StandardNotesServer getent hosts localstack
-    docker exec StandardNotesServer node -e "const net=require('net'); \
+    docker exec StandardNotes-Server getent hosts localstack
+    docker exec StandardNotes-Server node -e "const net=require('net'); \
       const s=net.connect(4566,'localstack'); s.setTimeout(5000); \
       s.on('connect',()=>{console.log('LocalStack TCP connected'); s.end(); process.exit(0)}); \
       s.on('timeout',()=>{console.error('LocalStack TCP timeout'); process.exit(1)}); \
@@ -244,15 +244,15 @@ duplicates.
     > that DNS server and will *not* resolve `localstack`. Two
     > working options:
     >
-    > - Put StandardNotesServer and StandardNotes-LocalStack on the
+    > - Put StandardNotes-Server and StandardNotes-LocalStack on the
     >   **same user-defined Docker network** (e.g. a custom bridge),
     >   and either name the LocalStack container `localstack` or give
     >   it a network alias `localstack`.
     > - Or, keep `br0` / macvlan / VLAN: install
     >   `StandardNotes-LocalStack` on the **same VLAN** as
-    >   StandardNotesServer with a **fixed IP** (e.g. `192.168.x.x`),
+    >   StandardNotes-Server with a **fixed IP** (e.g. `192.168.x.x`),
     >   then **append** `--add-host=localstack:<LocalStack-IP>` to
-    >   StandardNotesServer's *Extra Parameters* and restart it.
+    >   StandardNotes-Server's *Extra Parameters* and restart it.
     >   `getent hosts localstack` must then return that IP.
 6. **Check `COOKIE_DOMAIN`.** Verify it is a **bare domain** —
    `standardnotesserver.mydomain.tld`, not `https://...`, not a URL,
@@ -304,7 +304,7 @@ After this, **also** persist the fix for next time:
    `chmod +x` it. See
    [Step 2 of the Quick Start](#step-2--start-localstack-required-companion)
    for the one-liner.
-2. Restart `StandardNotesServer` so its workers reconnect against the
+2. Restart `StandardNotes-Server` so its workers reconnect against the
    now-populated SNS / SQS.
 
 ### Hard guardrails before you migrate any real notes
@@ -371,23 +371,23 @@ What it deliberately does **not** do:
   image is shipped as a **separate** Unraid template in the companion
   repo
   [`junkerderprovinz/standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui)
-  (container name `StandardNotes`). Install it on its own and point it
+  (container name `StandardNotes-WebUI`). Install it on its own and point it
   at this server via your reverse proxy.
 
 What it does do:
 
-- **One Unraid template per concern** — `StandardNotesServer` and
+- **One Unraid template per concern** — `StandardNotes-Server` and
   the required companion `StandardNotes-LocalStack` (SNS / SQS). The
   browser client lives in the companion repo as its own
-  `StandardNotes` template.
+  `StandardNotes-WebUI` template.
 - **Two templates from one CA submission.** Once this repo is listed
   on the Unraid Community Applications feed, both
-  `StandardNotesServer` and `StandardNotes-LocalStack` appear as
+  `StandardNotes-Server` and `StandardNotes-LocalStack` appear as
   **separate installable apps** in the Unraid **Apps** tab even
   though they ship from the same GitHub repo and `ca_profile.xml`
   maintainer. Install them one at a time, in the install order
   documented in [§ 2](#install-order-mandatory). The browser client
-  (`StandardNotes`) appears as a third, separate app from the
+  (`StandardNotes-WebUI`) appears as a third, separate app from the
   companion [`standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui)
   repo. *(CA's exact list grouping in the UI may vary; what matters is
   that each of the three templates is installed as its own container,
@@ -430,7 +430,7 @@ points users frequently ask about:
   image as its **own** Unraid container and point it at this server via
   your reverse proxy. The companion template
   [`junkerderprovinz/standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui)
-  ships exactly that — container name `StandardNotes`, default host
+  ships exactly that — container name `StandardNotes-WebUI`, default host
   port `3001` to avoid the backend's `:3000`. Keeping web and server
   separate mirrors upstream's own `docker-compose.example.yml`, makes
   upgrades independent, and avoids the maintenance burden of a custom
@@ -451,7 +451,7 @@ points users frequently ask about:
 ┌──────────────────────────── Unraid Host ────────────────────────────┐
 │                                                                     │
 │   Reverse Proxy                                                     │
-│   (SWAG / NPM / Traefik)  ──HTTPS──►  StandardNotesServer           │
+│   (SWAG / NPM / Traefik)  ──HTTPS──►  StandardNotes-Server           │
 │                                       (standardnotes/server)        │
 │                                       :3000  API gateway            │
 │                                       :3104  files server           │
@@ -485,8 +485,8 @@ The Standard Notes server image talks to:
 | **MariaDB** | Persistent store for users, items (encrypted note blobs), sessions, settings and migration metadata. | Server fails to start — no schema, no auth, no notes. |
 | **Redis** | Cache, ephemeral session state, rate-limit counters, sync deduplication state shared across worker processes. | Sessions and `/v1/items` sync state are not deduplicated correctly across requests; `ECONNREFUSED` / timeout in logs; sync loops and duplicate notes become possible. |
 | **StandardNotes-LocalStack** | Emulates AWS SNS topics and SQS queues that `standardnotes/server` workers (auth, syncing-server, files, revisions, analytics, scheduler) publish to and consume from. Bootstrap script pre-creates the exact topics / queues upstream expects. | `files-worker.log` fills with `getaddrinfo ENOTFOUND localstack`; even when TCP-reachable but **unbootstrapped**, account creation hangs and the first note duplicates infinitely. |
-| **StandardNotesServer** | Standard Notes API gateway, sync server, auth server and files server, all in one image. End-to-end-encrypted note bodies are stored encrypted; the server cannot read them. | The whole stack — no API to talk to. |
-| **StandardNotes (WebUI)** *(separate repo)* | Official `standardnotes/web` browser client. Pure static UI served on container port `80`; the sync server is configured per-browser at runtime via *Advanced options → Custom Sync Server*. | Optional — desktop / mobile apps work without it. Without it you simply have no browser client. |
+| **StandardNotes-Server** | Standard Notes API gateway, sync server, auth server and files server, all in one image. End-to-end-encrypted note bodies are stored encrypted; the server cannot read them. | The whole stack — no API to talk to. |
+| **StandardNotes-WebUI** *(separate repo)* | Official `standardnotes/web` browser client. Pure static UI served on container port `80`; the sync server is configured per-browser at runtime via *Advanced options → Custom Sync Server*. | Optional — desktop / mobile apps work without it. Without it you simply have no browser client. |
 
 ### Install order (mandatory)
 
@@ -503,13 +503,13 @@ inside the next container.
 3. **StandardNotes-LocalStack** (this repo, companion). Drop the
    bootstrap script on the Unraid host **before** first start so the
    init hook runs automatically (see [§ 3 Step 2](#step-2--start-localstack-required-companion)).
-4. **StandardNotesServer** (this repo, main template). On
+4. **StandardNotes-Server** (this repo, main template). On
    `br0` / macvlan / VLAN / static-IP installs, append
    `--add-host=localstack:<LocalStack-IP>` to *Extra Parameters*
    **before** starting it for the first time — Docker's embedded DNS
    does not resolve container names across `br0` / macvlan, and
    without `--add-host` the workers cannot find `localstack`.
-5. **StandardNotes (WebUI)** *(optional)* from the separate companion
+5. **StandardNotes-WebUI** *(optional)* from the separate companion
    repo [`standardnotes-webui`](https://github.com/junkerderprovinz/standardnotes-webui).
    Install last — it only needs the backend's public HTTPS URL.
 6. **Reverse-proxy hosts (NPM / SWAG / Traefik / Caddy)** for the
@@ -607,8 +607,8 @@ mapping at its default — it points at the file you just placed.
 - **`br0` / macvlan / VLAN / static-IP setup** (e.g. each container
   pinned to its own fixed IP on `br0.<vlan>`): set the LocalStack
   container's *Network Type* to the same `br0`-VLAN as
-  `StandardNotesServer` and give it a **fixed IP** (e.g.
-  `192.168.x.x`). Then, in `StandardNotesServer`'s **Extra
+  `StandardNotes-Server` and give it a **fixed IP** (e.g.
+  `192.168.x.x`). Then, in `StandardNotes-Server`'s **Extra
   Parameters**, **append** `--add-host=localstack:<LocalStack-IP>`
   (substituting the IP you assigned). Docker's embedded DNS does
   *not* resolve container names across `br0` / macvlan — `--add-host`
@@ -644,8 +644,8 @@ populate the running container in place.
 > LocalStack, confirm the server container can resolve and reach it:
 >
 > ```bash
-> docker exec StandardNotesServer getent hosts localstack
-> docker exec StandardNotesServer node -e "const net=require('net'); \
+> docker exec StandardNotes-Server getent hosts localstack
+> docker exec StandardNotes-Server node -e "const net=require('net'); \
 >   const s=net.connect(4566,'localstack'); s.setTimeout(5000); \
 >   s.on('connect',()=>{console.log('LocalStack TCP connected'); s.end(); process.exit(0)}); \
 >   s.on('timeout',()=>{console.error('LocalStack TCP timeout'); process.exit(1)}); \
@@ -656,7 +656,7 @@ populate the running container in place.
 > / VLAN / static-IP installs, `getent hosts localstack` returning
 > empty (and `getaddrinfo ENOTFOUND localstack` from the node probe)
 > means the `--add-host=localstack:<LocalStack-IP>` mapping is
-> missing from `StandardNotesServer`'s *Extra Parameters* — add it
+> missing from `StandardNotes-Server`'s *Extra Parameters* — add it
 > and restart the server container. See
 > [§ 11](#11-troubleshooting) and
 > [`docs/sync-loop-troubleshooting.md`](docs/sync-loop-troubleshooting.md)
@@ -664,7 +664,7 @@ populate the running container in place.
 
 ### Step 3 — Start the Standard Notes server
 
-**Docker** → **Add Container** → pick **StandardNotesServer** under
+**Docker** → **Add Container** → pick **StandardNotes-Server** under
 *User templates*. Fill in:
 
 - **DB Host / Port / Username / Password / Name** → values of your MariaDB
@@ -864,7 +864,7 @@ In the NPM UI, **Hosts → Proxy Hosts → Add Proxy Host**:
 
 - **Domain Names:** `standardnotesserver.mydomain.tld`
 - **Scheme:** `http`
-- **Forward Hostname / IP:** `192.168.x.x` *(StandardNotesServer container IP)*
+- **Forward Hostname / IP:** `192.168.x.x` *(StandardNotes-Server container IP)*
 - **Forward Port:** `3000`
 - **Block Common Exploits:** on
 - **Websockets Support:** on
@@ -905,7 +905,7 @@ URL — that is the upstream shape. Two options:
 2. **Two NPM proxy hosts / two subdomains (recommended for full
    attachment support).** Add a second NPM proxy host, e.g.
    `files.standardnotesserver.mydomain.tld` → `192.168.x.x:3125` (the
-   StandardNotesServer container IP), with its own Let's Encrypt
+   StandardNotes-Server container IP), with its own Let's Encrypt
    certificate and **Force SSL** on. Then set
    **Public Files Server URL** = `https://files.standardnotesserver.mydomain.tld`
    in the template.
@@ -974,7 +974,7 @@ folder, start the container.
 
 ```bash
 docker pull standardnotes/server:latest
-docker stop StandardNotesServer && docker rm StandardNotesServer
+docker stop StandardNotes-Server && docker rm StandardNotes-Server
 # re-create with the same template / docker run args
 ```
 
@@ -1034,8 +1034,8 @@ start — watch the log for errors.
 - Resolution test from the server container:
 
     ```bash
-    docker exec StandardNotesServer getent hosts localstack
-    docker exec StandardNotesServer node -e "const net=require('net'); \
+    docker exec StandardNotes-Server getent hosts localstack
+    docker exec StandardNotes-Server node -e "const net=require('net'); \
       const s=net.connect(4566,'localstack'); s.setTimeout(5000); \
       s.on('connect',()=>{console.log('LocalStack TCP connected'); s.end(); process.exit(0)}); \
       s.on('timeout',()=>{console.error('LocalStack TCP timeout'); process.exit(1)}); \
@@ -1045,7 +1045,7 @@ start — watch the log for errors.
   The first line must print a non-empty result; the second must
   print `LocalStack TCP connected`.
 - If `getent` returns empty: containers are not on a shared
-  user-defined Docker network. Either put StandardNotesServer and
+  user-defined Docker network. Either put StandardNotes-Server and
   StandardNotes-LocalStack on the **same user-defined Docker
   network** and give LocalStack the network alias `localstack`, or
   — on `br0` / macvlan / VLAN / static-IP installs — install
@@ -1074,11 +1074,11 @@ start — watch the log for errors.
   message failed: getaddrinfo ENOTFOUND localstack`.
 - Verify `REDIS_HOST` / `REDIS_PORT` point at the right **IP** and
   that the Redis container is actually reachable from the
-  StandardNotesServer container (this is the authoritative test —
+  StandardNotes-Server container (this is the authoritative test —
   same network namespace the server itself uses):
 
     ```bash
-    docker exec StandardNotesServer node -e "const net=require('net'); \
+    docker exec StandardNotes-Server node -e "const net=require('net'); \
       const s=net.connect(6379,'192.168.x.x'); s.setTimeout(5000); \
       s.on('connect',()=>{console.log('Redis TCP connected'); s.end(); process.exit(0)}); \
       s.on('timeout',()=>{console.error('Redis TCP timeout'); process.exit(1)}); \
@@ -1092,7 +1092,7 @@ start — watch the log for errors.
     image is not a second Redis server; it is only a way to get a
     `redis-cli` binary on demand.
 - Verify LocalStack is running and the hostname `localstack`
-  resolves from the server container (`docker exec StandardNotesServer
+  resolves from the server container (`docker exec StandardNotes-Server
   getent hosts localstack`) — worker logs must not show `ENOTFOUND
   localstack`.
 - Verify `COOKIE_DOMAIN` matches your public sync host and that the
@@ -1107,7 +1107,7 @@ start — watch the log for errors.
 <details>
 <summary><b>Unraid edit screen shows template defaults / values look "reset"</b></summary>
 
-- Symptom: opening the StandardNotesServer (or LocalStack / WebUI)
+- Symptom: opening the StandardNotes-Server (or LocalStack / WebUI)
   container, clicking *Edit*, and seeing all variables back at the
   template defaults — `192.168.x.x`, blank secrets, etc. — even
   right after a successful install.
@@ -1117,9 +1117,9 @@ start — watch the log for errors.
   *Apps* / *Add Container* / *Templates* re-displays the template
   defaults, which is expected.
 - Do **not** overwrite the saved per-container XML
-  (`/boot/config/plugins/dockerMan/templates-user/my-StandardNotesServer.xml`
+  (`/boot/config/plugins/dockerMan/templates-user/my-StandardNotes-Server.xml`
   and the corresponding `my-StandardNotes-LocalStack.xml` /
-  `my-StandardNotes.xml`) with `curl` from this repo after you have
+  `my-StandardNotes-WebUI.xml`) with `curl` from this repo after you have
   configured the container. The `templates/` files in this repo are
   *new-install* templates; once Unraid has saved a `my-*.xml`, that
   file holds your real values and must not be clobbered.
