@@ -27,8 +27,6 @@ bundled databases, no surprises.
 <i>Unofficial community wrapper. Not affiliated with or supported by Standard Notes.</i>
 </p>
 
----
-
 ## Table of Contents
 
 0. [⚠️ Sync-Loop / Duplicate Notes Guardrails](#0-sync-loop--duplicate-notes-guardrails)
@@ -44,8 +42,6 @@ bundled databases, no surprises.
 10. [Updating](#10-updating)
 11. [Troubleshooting](#11-troubleshooting)
 12. [Contributing / License](#12-contributing--license)
-
----
 
 ## 0. Sync-Loop / Duplicate Notes Guardrails
 
@@ -348,8 +344,6 @@ Full step-by-step checklist:
   cookie handling and an unstable image tag. Pinning a known-good
   tag was a working mitigation.
 
----
-
 ## 1. What is this?
 
 This repository ships **Unraid Community Application templates** for the
@@ -443,8 +437,6 @@ points users frequently ask about:
   every upstream component bump. This wrapper deliberately stays close
   to upstream so updates are just a tag change.
 
----
-
 ## 2. Architecture
 
 ```
@@ -518,8 +510,6 @@ inside the next container.
    before** a real client (desktop, mobile, browser) is pointed at the
    server — clients require HTTPS, and `Secure` session cookies are
    dropped over plain HTTP. See [§ 8](#8-reverse-proxy).
-
----
 
 ## 3. Quick Start on Unraid
 
@@ -711,8 +701,6 @@ Point your reverse proxy at `http://<unraid-ip>:3000`. Open the official
 options** on the sign-up screen → enter `https://your-domain/` as the
 **Sync Server**. Create your account.
 
----
-
 ## 4. Generating Secrets
 
 The server image requires three high-entropy secrets. Generate each with
@@ -731,8 +719,6 @@ matching fields in the Unraid template.
 > ⚠️ **Treat these as write-once.** Rotating `AUTH_SERVER_ENCRYPTION_SERVER_KEY`
 > renders existing server-side data unreadable. Back them up to your
 > password manager **before** you deploy.
-
----
 
 ## 5. Database & Cache
 
@@ -783,8 +769,6 @@ Set the Redis Host field to the **IP address** of your Redis container
 > image fork supports Redis auth, verify the env-var name against its
 > docs first, then add it as a custom Variable in the template.
 
----
-
 ## 6. Configuration Reference
 
 ### Server template — environment variables
@@ -822,8 +806,6 @@ Set the Redis Host field to the **IP address** of your Redis container
 A full upstream-aligned [`examples/.env.example`](examples/.env.example) is
 included for reference / non-Unraid use.
 
----
-
 ## 7. Security
 
 - **Always** put Standard Notes behind HTTPS — never publish port 3000
@@ -840,8 +822,6 @@ included for reference / non-Unraid use.
   for the relevant environment variable.
 - **Patch regularly** — `docker pull standardnotes/server:latest` and
   recreate, see [§ 10](#10-updating).
-
----
 
 ## 8. Reverse Proxy
 
@@ -949,8 +929,6 @@ If you reverse-proxy the **files server** under a separate hostname
 `PUBLIC_FILES_SERVER_URL=https://files.standardnotesserver.mydomain.tld` in
 the template's *Public Files Server URL* field.
 
----
-
 ## 9. Backup & Restore
 
 Three things to back up, in order of importance:
@@ -968,8 +946,6 @@ Restoring is the reverse: provision a fresh DB and Redis, paste the
 saved secrets into the template, restore the SQL dump and the uploads
 folder, start the container.
 
----
-
 ## 10. Updating
 
 ```bash
@@ -981,8 +957,6 @@ docker stop StandardNotes-Server && docker rm StandardNotes-Server
 On Unraid: **Docker** tab → click the container → **Force Update**. Your
 appdata is untouched. Migrations, if any, run automatically on the next
 start — watch the log for errors.
-
----
 
 ## 11. Troubleshooting
 
@@ -1141,8 +1115,6 @@ start — watch the log for errors.
   Servers are rejected by the desktop / mobile apps.
 </details>
 
----
-
 ## 12. Contributing / License
 
 Pull requests welcome. Issues:
@@ -1179,3 +1151,9 @@ xmllint --noout templates/*.xml
   emulation
 - [**Unraid Community Applications**](https://forums.unraid.net/topic/38582-plug-in-community-applications/)
   — the distribution channel
+
+## Support this project
+
+If this template saves you a setup hassle or a debug night, consider buying me a coffee:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/junkerderprovinz)
