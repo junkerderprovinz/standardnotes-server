@@ -48,7 +48,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Track standardnotes/server image tag in the Unraid template",
+      "description": "Track standardnotes/server image tag in the Unraid template (skipped for :latest, used if we ever pin)",
       "managerFilePatterns": ["/templates/standardnotes-server\\.xml$/"],
       "matchStrings": [
         "<Repository>(?<depName>standardnotes/server):(?<currentValue>[^<]+)</Repository>"
@@ -62,6 +62,16 @@
       "matchStrings": [
         "<Repository>(?<depName>localstack/localstack):(?<currentValue>[^<]+)</Repository>"
       ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Upstream digest watcher: notify us when standardnotes/server:latest is re-pushed",
+      "managerFilePatterns": ["/^\\.renovate-watch\\.txt$/"],
+      "matchStrings": [
+        "(?<depName>standardnotes/server)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "currentValueTemplate": "latest",
       "datasourceTemplate": "docker"
     }
   ]
